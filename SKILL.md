@@ -367,54 +367,54 @@ Write to `loom/logs/iteration_{{N}}.md`:
 After final iteration (or convergence), show the user:
 
 ```markdown
-🧵 LOOM RESULTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+LOOM RESULTS
+---
 
 Original: "{{user prompt}}"
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 ### Iteration 1
-✓ Compiled → loom/compiled_v1.py
+- Compiled -> loom/compiled_v1.py
   Tasks: {{task_count}}
 
-✓ Spawned {{agent_count}} agents
+- Spawned {{agent_count}} agents
   - researcher: {{result}}
   - architect: {{result}}
 
-⚠ Improvements needed:
+- Improvements needed:
   - {{issue1}}
   - {{issue2}}
 
 ### Iteration 2
-✓ Recompiled with improvements
+- Recompiled with improvements
   Added: {{what_added}}
 
-✓ Spawned {{agent_count}} agents
+- Spawned {{agent_count}} agents
   - coder: {{result}}
   - reviewer: {{result}}
 
-✓ {{improvements}}
+- {{improvements}}
 
 ### Iteration 3
-✓ Final refinement
-✓ All tasks completed
-✓ No issues found
+- Final refinement
+- All tasks completed
+- No issues found
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-### 📦 DELIVERABLES
+### DELIVERABLES
 
 {{list actual results from final iteration}}
 
-### 📁 LOOM STATE
+### LOOM STATE
 
 All artifacts saved to loom/:
-- compiled_v1.py → compiled_v3.py (evolution)
+- compiled_v1.py -> compiled_v3.py (evolution)
 - outputs/*.py (all subagent results)
 - logs/iteration_*.md (detailed logs)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 ```
 
 ## Special Cases
@@ -446,7 +446,7 @@ If a subagent produces broken code:
 If subagents are blocked on ambiguity:
 
 ```
-⚠️ LOOM needs clarification:
+LOOM needs clarification:
 
 {{subagent_name}} encountered ambiguity:
 "{{the question}}"

@@ -23,7 +23,7 @@ Thank you for your interest in contributing to Loom! This document provides guid
 
 There are many ways to contribute to Loom:
 
-### 🐛 Report Bugs
+### Report Bugs
 Found a bug? Report it via [GitHub Issues](../../issues) with:
 - Clear description of the problem
 - Steps to reproduce
@@ -31,33 +31,33 @@ Found a bug? Report it via [GitHub Issues](../../issues) with:
 - Loom artifacts (compiled_v*.py, outputs, logs) if applicable
 - Claude Code version
 
-### 💡 Suggest Features
+### Suggest Features
 Have an idea for improvement? Open a [Feature Request](../../issues/new?template=feature_request.md):
 - Describe the feature and use case
 - Explain why it would be valuable
 - Provide examples if possible
 
-### 📖 Improve Documentation
+### Improve Documentation
 Help make Loom easier to understand:
 - Fix typos or unclear explanations
 - Add examples and use cases
 - Improve installation instructions
 - Translate documentation (future)
 
-### 🎯 Share Examples
+### Share Examples
 Share interesting workflows:
 - Create example markdown files in `examples/`
 - Document real-world use cases
 - Show creative Loom applications
 
-### 🔧 Submit Code
+### Submit Code
 Improve Loom's implementation:
 - Fix bugs
 - Add subagent types
 - Optimize compilation logic
 - Enhance orchestration
 
-### 💬 Help Others
+### Help Others
 Support the community:
 - Answer questions in [Discussions](../../discussions)
 - Review pull requests
@@ -180,14 +180,14 @@ Support the community:
 
 ### Good Enhancement Suggestions
 
-✅ **Specific:** "Add a 'debugger' subagent for fixing broken code"
-❌ **Vague:** "Make it better"
+GOOD: **Specific:** "Add a 'debugger' subagent for fixing broken code"
+BAD: **Vague:** "Make it better"
 
-✅ **Motivated:** Explains the problem it solves
-❌ **Unmotivated:** No clear use case
+GOOD: **Motivated:** Explains the problem it solves
+BAD: **Unmotivated:** No clear use case
 
-✅ **Example-driven:** Shows how it would work
-❌ **Abstract:** Hard to visualize
+GOOD: **Example-driven:** Shows how it would work
+BAD: **Abstract:** Hard to visualize
 
 ---
 
@@ -211,7 +211,7 @@ Support the community:
 
 1. **Create a feature branch**
    ```bash
-   git checkout -main
+   git checkout main
    git checkout -b feature/your-feature-name
    ```
 
@@ -285,9 +285,15 @@ loom/
 ├── README.md              # Overview, installation, quick start
 ├── ARCHITECTURE.md        # Technical deep dive
 ├── CONTRIBUTING.md        # This file
-├── examples/
-│   ├── *.md              # Detailed examples
-└── SKILL.md              # The skill itself
+├── DIAGRAMS.md            # Visual flowcharts and diagrams
+├── CHANGELOG.md           # Version history
+├── SKILL.md               # The skill definition
+├── LICENSE                # MIT license
+└── examples/
+    ├── README.md          # Examples index
+    ├── prompt-compilation.md
+    ├── parallel-execution.md
+    └── refinement-loop.md
 ```
 
 ### Style Guide
@@ -367,7 +373,7 @@ loom/
 
 ```bash
 # Clone the repo
-git clone https://github.com/yourusername/loom.git
+git clone https://github.com/steelheadforever/loom.git
 cd loom
 
 # Install the skill
@@ -405,15 +411,15 @@ diff loom/compiled_v1.py loom/compiled_v2.py
 ```markdown
 ## Good Examples
 
-✓ "Write to: loom/compiled_v1.py"
-✓ "Spawn researcher to find APIs"
-✓ "Apply patches to create v2"
+OK: "Write to: loom/compiled_v1.py"
+OK: "Spawn researcher to find APIs"
+OK: "Apply patches to create v2"
 
 ## Bad Examples
 
-❌ "Maybe write to a file" (vague)
-❌ "Do some research" (non-specific)
-❌ "Update the prompt somehow" (unclear)
+BAD: "Maybe write to a file" (vague)
+BAD: "Do some research" (non-specific)
+BAD: "Update the prompt somehow" (unclear)
 ```
 
 ### Documentation
@@ -421,17 +427,17 @@ diff loom/compiled_v1.py loom/compiled_v2.py
 ```markdown
 ## Good Examples
 
-✓ Clear headings with emoji (## 🔄 Refinement Loop)
-✓ Code examples with language tags (```python)
-✓ Short paragraphs (2-3 sentences max)
-✓ Bullet points for lists
-✓ Tables for comparisons
+OK: Clear headings (## Refinement Loop)
+OK: Code examples with language tags (```python)
+OK: Short paragraphs (2-3 sentences max)
+OK: Bullet points for lists
+OK: Tables for comparisons
 
 ## Bad Examples
 
-❌ Wall of text (hard to scan)
-❌ No code examples (hard to understand)
-❌ Vague descriptions (hard to follow)
+BAD: Wall of text (hard to scan)
+BAD: No code examples (hard to understand)
+BAD: Vague descriptions (hard to follow)
 ```
 
 ### Commit Messages
@@ -439,15 +445,15 @@ diff loom/compiled_v1.py loom/compiled_v2.py
 ```markdown
 ## Good Examples
 
-✓ "Add performance-optimizer subagent type"
-✓ "Fix compilation error for nested tasks"
-✓ "Update README with Windows installation notes"
+OK: "Add performance-optimizer subagent type"
+OK: "Fix compilation error for nested tasks"
+OK: "Update README with Windows installation notes"
 
 ## Bad Examples
 
-❌ "Update stuff"
-❌ "Fix bug"
-❌ "Changes"
+BAD: "Update stuff"
+BAD: "Fix bug"
+BAD: "Changes"
 ```
 
 ---
@@ -507,4 +513,14 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 Don't hesitate to ask! Open a [Discussion](../../discussions) or comment on an issue.
 
-**Thank you for contributing to Loom!** 🎉
+**Thank you for contributing to Loom!**
+
+---
+
+## Related Documentation
+
+- [README.md](README.md) - Overview and quick start
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical deep dive
+- [DIAGRAMS.md](DIAGRAMS.md) - Visual flowcharts
+- [SKILL.md](SKILL.md) - The skill definition
+- [examples/](examples/) - Worked examples

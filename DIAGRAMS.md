@@ -1,6 +1,22 @@
 # Loom Visual Diagrams
 
-This document contains visual diagrams explaining how Loom works.
+Visual reference for how Loom works. These diagrams are in Mermaid format and render on GitHub.
+
+For the technical explanation behind these diagrams, see [ARCHITECTURE.md](ARCHITECTURE.md).
+
+---
+
+## Table of Contents
+
+- [High-Level Overview](#high-level-overview)
+- [Detailed Process Flow](#detailed-process-flow)
+- [Parallel Execution Model](#parallel-execution-model)
+- [System Architecture](#system-architecture)
+- [Iteration Timeline](#iteration-timeline)
+- [Data Flow Through Iterations](#data-flow-through-iterations)
+- [Context Efficiency Comparison](#context-efficiency-comparison)
+- [Patch-Based Refinement](#patch-based-refinement)
+- [File System State Evolution](#file-system-state-evolution)
 
 ---
 
@@ -8,17 +24,17 @@ This document contains visual diagrams explaining how Loom works.
 
 ```mermaid
 flowchart TB
-    subgraph Input["📝 INPUT"]
+    subgraph Input["INPUT"]
         A[User Prompt<br/>Natural Language]
     end
 
-    subgraph Core["🧵 LOOM CORE CAPABILITIES"]
-        B[🐍 Compilation Engine<br/>Text → Python]
-        C[🤖 Orchestration Layer<br/>Parallel Subagents]
-        D[🔄 Refinement Loop<br/>Iterative Improvement]
+    subgraph Core["LOOM CORE"]
+        B[Compilation Engine<br/>Text to Python]
+        C[Orchestration Layer<br/>Parallel Subagents]
+        D[Refinement Loop<br/>Iterative Improvement]
     end
 
-    subgraph Output["📦 OUTPUT"]
+    subgraph Output["OUTPUT"]
         E[Deliverables<br/>Code, Docs, Analysis]
         F[Artifacts<br/>compiled_v*.py, outputs/, logs/]
     end
@@ -33,39 +49,38 @@ flowchart TB
     style Input fill:#e1f5ff
     style Core fill:#fff4e1
     style Output fill:#e8f5e9
-    style B fill:#bbdefb
-    style C fill:#c5e1a5
-    style D fill:#ffccbc
 ```
 
 ---
 
 ## Detailed Process Flow
 
+The 7-step process that Loom follows for every invocation. See [ARCHITECTURE.md - Core Architecture](ARCHITECTURE.md#core-architecture) for implementation details.
+
 ```mermaid
 flowchart TD
-    Start([User: /loom build a CLI]) --> Setup[Create loom/ workspace]
+    Start([User: /loom prompt]) --> Setup[Create loom/ workspace]
 
-    Setup --> Compile[🐍 COMPILE<br/>Transform to Python<br/>loom/compiled_v1.py]
+    Setup --> Compile[COMPILE<br/>Transform to Python<br/>loom/compiled_v1.py]
 
-    Compile --> Analyze[🧠 ANALYZE<br/>Extract tasks & dependencies<br/>Build dependency graph]
+    Compile --> Analyze[ANALYZE<br/>Extract tasks and dependencies<br/>Build dependency graph]
 
-    Analyze --> Orchestrate[🎯 ORCHESTRATE<br/>Match tasks to subagent types<br/>Group by dependency level]
+    Analyze --> Orchestrate[ORCHESTRATE<br/>Match tasks to subagent types<br/>Group by dependency level]
 
-    Orchestrate --> Spawn[🚀 SPAWN<br/>Launch subagents in parallel<br/>by level]
+    Orchestrate --> Spawn[SPAWN<br/>Launch subagents in parallel<br/>by level]
 
-    Spawn --> Execute[⚙️ EXECUTE<br/>Subagents read compiled.py<br/>Perform specialized tasks]
+    Spawn --> Execute[EXECUTE<br/>Subagents read compiled.py<br/>Perform specialized tasks]
 
-    Execute --> Collect[📥 COLLECT<br/>Read loom/outputs/*.py<br/>Check for issues]
+    Execute --> Collect[COLLECT<br/>Read loom/outputs/*.py<br/>Check for issues]
 
-    Collect --> Merge[🔀 MERGE<br/>Apply prompt_patches<br/>Create compiled_v2.py]
+    Collect --> Merge[MERGE<br/>Apply prompt_patches<br/>Create compiled_v2.py]
 
-    Merge --> Evaluate{🤔 EVALUATE<br/>Should iterate?}
+    Merge --> Evaluate{EVALUATE<br/>Should iterate?}
 
     Evaluate -->|Yes<br/>Improvements found| Spawn
-    Evaluate -->|No<br/>Converged or<br/>Max iterations| Present[🎉 PRESENT<br/>Show results & artifacts]
+    Evaluate -->|No<br/>Converged or<br/>Max iterations| Present[PRESENT<br/>Show results and artifacts]
 
-    Present --> End([✓ Complete])
+    Present --> End([Complete])
 
     style Start fill:#4CAF50,color:#fff
     style End fill:#4CAF50,color:#fff
@@ -79,54 +94,9 @@ flowchart TD
 
 ---
 
-## Three Core Capabilities
-
-```mermaid
-graph TB
-    subgraph Compilation["🐍 PROMPT-TO-PYTHON COMPILATION"]
-        C1[Natural Language Prompt]
-        C2[Parse Intent & Goals]
-        C3[Decompose into Tasks]
-        C4[Build Dependency Graph]
-        C5[Extract Context & Constraints]
-        C6[Python Representation<br/>class CompiledPrompt]
-
-        C1 --> C2 --> C3 --> C4 --> C5 --> C6
-    end
-
-    subgraph Orchestration["🤖 PARALLEL SUBAGENT ORCHESTRATION"]
-        O1[Read compiled.py]
-        O2[Match Tasks to Subagents<br/>researcher, architect, coder, etc.]
-        O3[Schedule by Dependency Level<br/>Level 0, 1, 2...]
-        O4[Spawn in Parallel]
-        O5[Aggregate Results]
-
-        O1 --> O2 --> O3 --> O4 --> O5
-    end
-
-    subgraph Refinement["🔄 RECURSIVE REFINEMENT LOOP"]
-        R1[Iteration N]
-        R2[Subagents Suggest Patches]
-        R3[Apply Patches]
-        R4[compiled_vN+1.py]
-        R5{Converged?}
-
-        R1 --> R2 --> R3 --> R4 --> R5
-        R5 -->|No| R1
-        R5 -->|Yes| R6[Final Results]
-    end
-
-    C6 --> O1
-    O5 --> R1
-
-    style Compilation fill:#e3f2fd
-    style Orchestration fill:#f3e5f5
-    style Refinement fill:#fff3e0
-```
-
----
-
 ## Parallel Execution Model
+
+Tasks are grouped by dependency level. All tasks at the same level run concurrently. See [ARCHITECTURE.md - Orchestration Layer](ARCHITECTURE.md#orchestration-layer) for the scheduling algorithm.
 
 ```mermaid
 graph TB
@@ -177,13 +147,15 @@ graph TB
 
 ## System Architecture
 
+How the orchestrator, file system, and subagent pool interact. See [ARCHITECTURE.md - Core Architecture](ARCHITECTURE.md#core-architecture).
+
 ```mermaid
 graph TB
-    subgraph User["👤 USER LAYER"]
+    subgraph User["USER LAYER"]
         UI[Claude Code Interface]
     end
 
-    subgraph Orchestrator["🧵 LOOM ORCHESTRATOR"]
+    subgraph Orchestrator["LOOM ORCHESTRATOR"]
         LE[Loom Engine<br/>SKILL.md]
         CE[Compilation Engine]
         OE[Orchestration Engine]
@@ -194,13 +166,13 @@ graph TB
         LE --> RE
     end
 
-    subgraph FileSystem["💾 FILE SYSTEM STATE"]
+    subgraph FileSystem["FILE SYSTEM STATE"]
         FS1[compiled_v*.py]
         FS2[outputs/*.py]
         FS3[logs/*.md]
     end
 
-    subgraph Subagents["🤖 SUBAGENT POOL"]
+    subgraph Subagents["SUBAGENT POOL"]
         SA1[Researcher]
         SA2[Architect]
         SA3[Coder]
@@ -231,7 +203,9 @@ graph TB
 
 ---
 
-## Iteration Timeline Example
+## Iteration Timeline
+
+Example timeline showing how parallelization saves time compared to sequential execution.
 
 ```mermaid
 gantt
@@ -244,13 +218,13 @@ gantt
     Spawn researcher     :done, s1, after c1, 5min
     Spawn architect      :done, s2, after s1, 5min
     Collect results      :done, col1, after s2, 30s
-    Merge patches → v2   :done, m1, after col1, 30s
+    Merge patches to v2  :done, m1, after col1, 30s
 
     section Iteration 2
     Spawn architect      :done, s3, after m1, 5min
     Spawn coders (parallel) :done, s4, after s3, 5min
     Collect results      :done, col2, after s4, 30s
-    Merge patches → v3   :done, m2, after col2, 30s
+    Merge patches to v3  :done, m2, after col2, 30s
 
     section Iteration 3
     Spawn reviewers (parallel) :done, s5, after m2, 5min
@@ -261,6 +235,8 @@ gantt
 ---
 
 ## Data Flow Through Iterations
+
+How the compiled prompt evolves from vague to validated across 3 iterations.
 
 ```mermaid
 graph LR
@@ -287,7 +263,7 @@ graph LR
     subgraph Iteration3["ITERATION 3: Validation"]
         I3_Compiled["compiled_v3.py<br/>2 tasks<br/>+ test requirements"]
         I3_Outputs["outputs/<br/>reviewer_1.py<br/>reviewer_2.py"]
-        I3_Done["✓ All tests pass<br/>✓ No new patches<br/>→ CONVERGED"]
+        I3_Done["All tests pass<br/>No new patches<br/>CONVERGED"]
 
         I3_Compiled --> I3_Outputs
         I3_Outputs --> I3_Done
@@ -305,6 +281,8 @@ graph LR
 ---
 
 ## Context Efficiency Comparison
+
+Why compilation matters: traditional approach duplicates context across every agent. Loom writes state to disk once and agents read it independently.
 
 ```mermaid
 graph TB
@@ -327,7 +305,7 @@ graph TB
         L5[Agent 2 reads compiled.py<br/>200 tokens]
         L6[Agent 3 reads compiled.py<br/>200 tokens]
         L7[Agent 4 reads compiled.py<br/>200 tokens]
-        L_Total["Total Context: 800 tokens<br/>Parallel execution<br/>5x more efficient"]
+        L_Total["Total Context: 800 tokens<br/>Parallel execution"]
 
         L1 --> L2 --> L3
         L3 --> L4 & L5 & L6 & L7
@@ -342,55 +320,9 @@ graph TB
 
 ---
 
-## Subagent Registry
-
-```mermaid
-mindmap
-  root((Loom<br/>Subagents))
-    researcher
-      Web search
-      API discovery
-      Documentation
-      Data sources
-    architect
-      Design decisions
-      Tech stack
-      Architecture
-      Tradeoffs
-    coder
-      Implementation
-      Code writing
-      Feature building
-      Integration
-    reviewer
-      Code review
-      Testing
-      Validation
-      Bug finding
-    debugger
-      Error analysis
-      Fixing bugs
-      Troubleshooting
-      Patches
-    data_analyst
-      Data analysis
-      Statistics
-      Visualization
-      Insights
-    documenter
-      Documentation
-      Tutorials
-      READMEs
-      API docs
-    custom
-      User-defined
-      Specialized
-      Domain-specific
-```
-
----
-
 ## Patch-Based Refinement
+
+How subagents suggest improvements to the compiled prompt through structured patches. See [ARCHITECTURE.md - Refinement Loop](ARCHITECTURE.md#refinement-loop).
 
 ```mermaid
 sequenceDiagram
@@ -412,7 +344,7 @@ sequenceDiagram
     Note over O: prompt_patches=[<br/>  {action: "add_context"},<br/>  {action: "add_task"}<br/>]
 
     L->>O: Read subagent output
-    L->>C2: Apply patches → compiled_v2.py
+    L->>C2: Apply patches
     Note over C2: version=2<br/>tasks=[...new...]<br/>context={...added...}
 
     L->>L: Iterate with v2
@@ -422,6 +354,8 @@ sequenceDiagram
 
 ## File System State Evolution
 
+How the `loom/` workspace grows across iterations.
+
 ```mermaid
 graph TD
     subgraph Init["Initial State"]
@@ -429,15 +363,15 @@ graph TD
     end
 
     subgraph After_I1["After Iteration 1"]
-        A1[loom/<br/>├─ compiled_v1.py<br/>├─ outputs/<br/>│  ├─ researcher_1.py<br/>│  └─ architect_1.py<br/>└─ logs/<br/>   └─ iteration_1.md]
+        A1[loom/<br/>compiled_v1.py<br/>outputs/researcher_1.py<br/>outputs/architect_1.py<br/>logs/iteration_1.md]
     end
 
     subgraph After_I2["After Iteration 2"]
-        A2[loom/<br/>├─ compiled_v1.py<br/>├─ compiled_v2.py ⭐<br/>├─ outputs/<br/>│  ├─ researcher_1.py<br/>│  ├─ architect_1.py<br/>│  ├─ architect_2.py ⭐<br/>│  ├─ coder_1.py ⭐<br/>│  └─ coder_2.py ⭐<br/>└─ logs/<br/>   ├─ iteration_1.md<br/>   └─ iteration_2.md ⭐]
+        A2[loom/<br/>compiled_v1.py<br/>compiled_v2.py<br/>outputs/architect_2.py<br/>outputs/coder_1.py<br/>outputs/coder_2.py<br/>logs/iteration_2.md]
     end
 
     subgraph After_I3["After Iteration 3"]
-        A3[loom/<br/>├─ compiled_v1.py<br/>├─ compiled_v2.py<br/>├─ compiled_v3.py ⭐<br/>├─ compiled_final.py ⭐<br/>├─ outputs/<br/>│  ├─ researcher_1.py<br/>│  ├─ architect_1.py<br/>│  ├─ architect_2.py<br/>│  ├─ coder_1.py<br/>│  ├─ coder_2.py<br/>│  ├─ reviewer_1.py ⭐<br/>│  └─ reviewer_2.py ⭐<br/>└─ logs/<br/>   ├─ iteration_1.md<br/>   ├─ iteration_2.md<br/>   └─ iteration_3.md ⭐]
+        A3[loom/<br/>compiled_v3.py<br/>compiled_final.py<br/>outputs/reviewer_1.py<br/>outputs/reviewer_2.py<br/>logs/iteration_3.md]
     end
 
     Init --> After_I1
@@ -452,4 +386,9 @@ graph TD
 
 ---
 
-These diagrams are in Mermaid format and will render beautifully on GitHub!
+## Related Documentation
+
+- [README.md](README.md) - Overview and quick start
+- [ARCHITECTURE.md](ARCHITECTURE.md) - Technical details behind these diagrams
+- [SKILL.md](SKILL.md) - The skill definition (operational reference)
+- [examples/](examples/) - Worked examples showing these flows in action

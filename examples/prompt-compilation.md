@@ -233,3 +233,16 @@ cat loom/compiled_v1.py
 ```
 
 Notice how Loom transforms your natural language into structured, executable Python!
+
+---
+
+## Other Examples
+
+- [Parallel Execution](parallel-execution.md) - How Loom runs multiple subagents concurrently
+- [Refinement Loop](refinement-loop.md) - Full 3-iteration cycle from vague to validated
+
+## Related Documentation
+
+- [README.md](../README.md) - Overview and quick start
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Technical deep dive into the compilation engine
+- [DIAGRAMS.md](../DIAGRAMS.md) - Visual flowcharts

@@ -79,14 +79,13 @@ By moving shared state to disk, Loom eliminates context duplication across subag
 
 ### Data Flow
 
-1. **User Input** → Natural language prompt
-2. **Compilation** → Structured Python representation
-3. **Orchestration** → Task analysis + subagent selection
-4. **Execution** → Parallel subagent spawning
-5. **Collection** → Read results from outputs/
-6. **Merging** → Apply patches to compiled prompt
-7. **Evaluation** → Converged? Iterate? Present?
-8. **Output** → Final deliverables + artifacts
+1. **Compile** → Transform natural language into structured Python
+2. **Analyze** → Extract tasks and build dependency graph
+3. **Orchestrate** → Match tasks to subagent types, group by dependency level
+4. **Spawn** → Launch subagents in parallel by level
+5. **Execute** → Subagents read compiled state and perform work
+6. **Collect** → Gather results from outputs/, check for issues
+7. **Merge** → Apply patches to compiled prompt, evaluate whether to iterate or present
 
 ---
 
@@ -528,25 +527,7 @@ def apply_patches(compiled: CompiledPrompt, patches: list[dict]) -> CompiledProm
 
 ### File-Based State
 
-All state lives on disk, not in context:
-
-```
-loom/
-├── compiled_v1.py       # Version 1 of compiled prompt
-├── compiled_v2.py       # Version 2 (with patches)
-├── compiled_v3.py       # Version 3
-├── compiled_final.py    # Copy of best version
-│
-├── outputs/
-│   ├── researcher_1.py  # Subagent results
-│   ├── architect_1.py
-│   └── coder_1.py
-│
-└── logs/
-    ├── iteration_1.md   # Human-readable logs
-    ├── iteration_2.md
-    └── iteration_3.md
-```
+All state lives on disk, not in context. See [README.md - Project Structure](README.md#project-structure) for the full workspace layout.
 
 ### Benefits
 
@@ -812,3 +793,13 @@ The result is a meta-prompt system that transforms complex tasks from single-thr
 ---
 
 **Questions or ideas for improvements?** Open an issue or discussion on GitHub!
+
+---
+
+## Related Documentation
+
+- [README.md](README.md) - Overview and quick start
+- [DIAGRAMS.md](DIAGRAMS.md) - Visual flowcharts of the concepts described here
+- [SKILL.md](SKILL.md) - The skill definition (operational reference)
+- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
+- [examples/](examples/) - Worked examples showing these concepts in action

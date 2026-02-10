@@ -168,7 +168,7 @@ spawn_plan = [
 [architect_1] Found auth files: auth.py, middleware.py, session.py, validators.py
 [architect_1] Entry points: /login, /logout, /register, /reset-password
 [architect_1] Writing: loom/outputs/architect_1.py
-[architect_1] ✓ Complete
+[architect_1] [done] Complete
 
 [Loom] Level 0 complete. Proceeding to Level 1...
 ```
@@ -239,15 +239,15 @@ class ArchitectOutput:
 
 [reviewer_1] Found 3 issues in auth flow
 [reviewer_1] Writing: loom/outputs/reviewer_1.py
-[reviewer_1] ✓ Complete
+[reviewer_1] [done] Complete
 
 [reviewer_2] Found 5 issues in input validation
 [reviewer_2] Writing: loom/outputs/reviewer_2.py
-[reviewer_2] ✓ Complete
+[reviewer_2] [done] Complete
 
 [reviewer_3] Found 4 issues in dependencies
 [reviewer_3] Writing: loom/outputs/reviewer_3.py
-[reviewer_3] ✓ Complete
+[reviewer_3] [done] Complete
 
 [Loom] Level 1 complete (3 agents in 5 minutes). Proceeding to Level 2...
 ```
@@ -272,7 +272,7 @@ class ArchitectOutput:
 [documenter_1] Compiling security report...
 [documenter_1] Total findings: 12 (3 critical, 5 medium, 4 low)
 [documenter_1] Writing: loom/outputs/documenter_1.py
-[documenter_1] ✓ Complete
+[documenter_1] [done] Complete
 
 [Loom] All levels complete!
 ```
@@ -284,20 +284,20 @@ class ArchitectOutput:
 ### Findings Summary
 
 ```
-🔒 SECURITY AUDIT RESULTS
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SECURITY AUDIT RESULTS
+---
 
 Total Issues Found: 12
-- 🔴 Critical: 3
-- 🟠 Medium: 5
-- 🟡 Low: 4
+- Critical: 3
+- Medium: 5
+- Low: 4
 
 Breakdown by Area:
 - Auth Flow: 3 issues
 - Input Validation: 5 issues
 - Dependencies: 4 issues
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 Execution Time: 15 minutes
 Sequential Time Would Be: 25 minutes
@@ -370,13 +370,13 @@ More parallel tasks = even better speedup:
 
 ## When Parallelization Works Best
 
-✅ **Great for:**
+**Great for:**
 - Multiple independent analyses (security reviews, code audits)
 - Research tasks that can be split (API comparison, literature review)
 - Testing multiple approaches (A/B testing, experiments)
 - Fan-out/fan-in patterns (gather data → process → aggregate)
 
-❌ **Limited for:**
+**Limited for:**
 - Purely sequential pipelines (step 1 → step 2 → step 3)
 - Tasks with shared mutable state
 - Very short tasks (overhead > benefit)
@@ -406,4 +406,17 @@ cat loom/logs/iteration_1.md
 
 ---
 
-**Parallel execution is one of Loom's superpowers. Use it to speed up complex, multi-faceted tasks!**
+Parallel execution is one of Loom's key strengths. Use it to speed up complex, multi-faceted tasks.
+
+---
+
+## Other Examples
+
+- [Prompt Compilation](prompt-compilation.md) - How Loom compiles prompts to Python
+- [Refinement Loop](refinement-loop.md) - Full 3-iteration cycle from vague to validated
+
+## Related Documentation
+
+- [README.md](../README.md) - Overview and quick start
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Technical deep dive into the orchestration layer
+- [DIAGRAMS.md](../DIAGRAMS.md) - Visual flowcharts

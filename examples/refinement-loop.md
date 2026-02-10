@@ -456,10 +456,10 @@ class CompiledPrompt:
     ]
 
     deliverables = [
-        "Backend server (Node.js) with API endpoints ✓",
-        "Frontend app (React) with weather display ✓",
+        "Backend server (Node.js) with API endpoints [done]",
+        "Frontend app (React) with weather display [done]",
         "README with setup instructions",
-        "Environment variable template (.env.example) ✓",
+        "Environment variable template (.env.example) [done]",
         "Test results and validation"  # NEW
     ]
 ```
@@ -564,67 +564,67 @@ class ReviewerOutput:
 
 ## Final Results
 
-### 🧵 LOOM RESULTS
+### LOOM RESULTS
 
 ```markdown
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 Original: "build a weather dashboard"
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
 ### Iteration 1 (Discovery)
-✓ Compiled → loom/compiled_v1.py
+[done] Compiled → loom/compiled_v1.py
   Tasks: 2 (research, design)
 
-✓ Spawned 2 agents
+[done] Spawned 2 agents
   - researcher: Found OpenWeatherMap API
   - architect: Identified missing requirements
 
-⚠ Improvements needed:
+[note] Improvements needed:
   - Clarified specific weather metrics to display
   - Made tech stack decisions (React, Node.js)
   - Added implementation tasks
 
 ### Iteration 2 (Implementation)
-✓ Recompiled → loom/compiled_v2.py
+[done] Recompiled → loom/compiled_v2.py
   Added context: weather_api, tech_stack
   Added tasks: implement_backend, implement_frontend
 
-✓ Spawned 3 agents
+[done] Spawned 3 agents
   - architect: Designed system architecture
   - coder (backend): Built Node.js API server
   - coder (frontend): Built React weather UI
 
-✓ Improvements suggested:
+[done] Improvements suggested:
   - Add testing tasks
 
 ### Iteration 3 (Validation)
-✓ Recompiled → loom/compiled_v3.py
+[done] Recompiled → loom/compiled_v3.py
   Added tasks: test_backend, test_frontend
 
-✓ Spawned 2 reviewers
-  - reviewer (backend): All tests passed ✓
-  - reviewer (frontend): All tests passed ✓
+[done] Spawned 2 reviewers
+  - reviewer (backend): All tests passed [done]
+  - reviewer (frontend): All tests passed [done]
 
-✓ Minor issues found (low severity, documented)
+[done] Minor issues found (low severity, documented)
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 
-### 📦 DELIVERABLES
+### DELIVERABLES
 
-✓ Backend server with OpenWeatherMap integration
-✓ React frontend with weather display
-✓ Responsive design (mobile + desktop)
-✓ Location search functionality
-✓ Error handling for invalid inputs
-✓ README with setup instructions
-✓ .env.example template
-✓ Test validation results
+[done] Backend server with OpenWeatherMap integration
+[done] React frontend with weather display
+[done] Responsive design (mobile + desktop)
+[done] Location search functionality
+[done] Error handling for invalid inputs
+[done] README with setup instructions
+[done] .env.example template
+[done] Test validation results
 
 Known Issues (low severity):
 - Backend: Missing rate limiting
 - Frontend: Missing loading indicator
 
-### 📁 LOOM STATE
+### LOOM STATE
 
 loom/
 ├── compiled_v1.py → v2.py → v3.py (evolution)
@@ -638,7 +638,7 @@ loom/
     ├── iteration_2.md
     └── iteration_3.md
 
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+---
 ```
 
 ---
@@ -700,25 +700,25 @@ Added: testing tasks, validation results
 
 Loom stops iterating when:
 
-✓ **No new patches suggested**
+[done] **No new patches suggested**
 ```python
 if len(all_patches) == 0:
     break  # Converged
 ```
 
-✓ **All tasks completed successfully**
+[done] **All tasks completed successfully**
 ```python
 if all(output.completed for output in outputs):
     break  # Success
 ```
 
-✓ **Maximum iterations reached**
+[done] **Maximum iterations reached**
 ```python
 if iteration >= 3:
     break  # Max iterations
 ```
 
-✓ **Prompt stabilized (v{{N}} == v{{N-1}})**
+[done] **Prompt stabilized (v{{N}} == v{{N-1}})**
 ```python
 if compiled_v3 == compiled_v2:
     break  # No changes
@@ -754,4 +754,17 @@ diff loom/compiled_v1.py loom/compiled_v2.py
 
 ---
 
-**Recursive refinement transforms rough ideas into production-ready solutions through automated feedback loops!**
+Recursive refinement transforms rough ideas into validated solutions through automated feedback loops.
+
+---
+
+## Other Examples
+
+- [Prompt Compilation](prompt-compilation.md) - How Loom compiles prompts to Python
+- [Parallel Execution](parallel-execution.md) - How Loom runs multiple subagents concurrently
+
+## Related Documentation
+
+- [README.md](../README.md) - Overview and quick start
+- [ARCHITECTURE.md](../ARCHITECTURE.md) - Technical deep dive into the refinement loop
+- [DIAGRAMS.md](../DIAGRAMS.md) - Visual flowcharts
