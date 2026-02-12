@@ -1,6 +1,6 @@
 # Loom - Parallel Prompt Orchestration for Claude Code
 
-Loom compiles your prompt into a structured task graph, distributes work across parallel subagents, and iteratively refines through automated feedback loops. Each run gets its own named directory with a human-readable summary as the primary output.
+Loom compiles your prompt into structured data that can be used as an object. Loom then distributes work across parallel subagents and iteratively refines through automated feedback loops. Each run gets its own named directory with a human-readable summary as the primary output.
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
