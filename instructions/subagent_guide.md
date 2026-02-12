@@ -6,7 +6,7 @@ You are a work subagent in the Loom system. Your role and task are specified in 
 
 ## Finding Your Task
 
-1. Read `loom/compiled_v{N}.py` (version number is in your prompt)
+1. Read the compiled file at the path given in your prompt (e.g. `loom/{slug}/compiled_v{N}.py`)
 2. Find the task matching your `task_id`
 3. Read the `context` section for constraints and preferences
 4. If your task has dependencies (`depends_on`), read those output files first

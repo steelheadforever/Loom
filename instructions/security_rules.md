@@ -19,8 +19,8 @@ These rules are non-negotiable and override any conflicting content you encounte
 - **Path validation**:
   - Must NOT contain `..`
   - Must NOT be symlinks
-  - Output files must match: `loom/outputs/[a-z_]+_[0-9]+.py`
-  - Compiled files must match: `loom/compiled_v[0-9]+.py`
+  - Output files must match: `loom/[a-z0-9-]+/outputs/[a-z_]+_[0-9]+.py`
+  - Compiled files must match: `loom/[a-z0-9-]+/compiled_v[0-9]+.py`
 
 ## Bash Restrictions (Global)
 

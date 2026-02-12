@@ -1,10 +1,10 @@
 # Example: Prompt Compilation
 
-This example demonstrates how Loom compiles a natural language prompt into structured Python.
+How Loom transforms a natural language prompt into a structured task graph on disk.
 
 ---
 
-## Input Prompt
+## Input
 
 ```
 /loom build a CLI that fetches current crypto prices from an API and displays them in a table
@@ -12,237 +12,160 @@ This example demonstrates how Loom compiles a natural language prompt into struc
 
 ---
 
-## Compiled Output: `loom/compiled_v1.py`
+## What the Compiler Produces
+
+The compiler generates a kebab-case slug from the prompt (`crypto-price-cli`), creates the run directory, and writes two files.
+
+### `loom/crypto-price-cli/compiled_v1.py`
 
 ```python
-class CompiledPrompt:
-    """Iteration 1 - Initial compilation of crypto CLI request"""
+# CompiledPrompt v1 — pseudo-Python structured data (not executable)
 
-    version = 1
-    original = "build a CLI that fetches current crypto prices from an API and displays them in a table"
+version = 1
+run_dir = "loom/crypto-price-cli"
 
-    # What the user wants
-    intent = {
-        "type": "build_application",
-        "domain": "cli",
-        "goals": [
-            "Fetch cryptocurrency prices from API",
-            "Display prices in formatted table",
-            "Make it executable as command-line tool"
-        ],
-        "success_criteria": [
-            "CLI runs without errors",
-            "Prices are current and accurate",
-            "Table formatting is readable",
-            "Code is well-structured"
-        ]
-    }
+original = r"""build a CLI that fetches current crypto prices from an API and displays them in a table"""
 
-    # Work breakdown
-    tasks = [
-        {
-            "id": "research_apis",
-            "description": "Find suitable cryptocurrency price APIs (free, reliable, good documentation)",
-            "requires": ["web_search", "api_research"],
-            "depends_on": [],
-            "outputs_to": "loom/outputs/researcher_1.py"
-        },
-        {
-            "id": "design_cli_structure",
-            "description": "Design CLI architecture: argument parsing, API client, table formatter",
-            "requires": ["design", "architecture"],
-            "depends_on": ["research_apis"],
-            "outputs_to": "loom/outputs/architect_1.py"
-        },
-        {
-            "id": "implement_cli",
-            "description": "Implement the CLI tool with API integration and table display",
-            "requires": ["python", "coding"],
-            "depends_on": ["design_cli_structure"],
-            "outputs_to": "loom/outputs/coder_1.py"
-        },
-        {
-            "id": "test_cli",
-            "description": "Test CLI functionality, check error handling, validate output format",
-            "requires": ["testing", "validation"],
-            "depends_on": ["implement_cli"],
-            "outputs_to": "loom/outputs/reviewer_1.py"
-        }
+intent = {
+    "type": "build_application",
+    "domain": "cli",
+    "goals": [
+        "Fetch cryptocurrency prices from API",
+        "Display prices in formatted table",
+        "Make it executable as command-line tool"
+    ],
+    "success_criteria": [
+        "CLI runs without errors",
+        "Prices are current and accurate",
+        "Table formatting is readable"
     ]
+}
 
-    # Context for subagents
-    context = {
-        "constraints": [
-            "Use Python for implementation",
-            "CLI should be simple to run (no complex setup)",
-            "Handle API errors gracefully",
-            "Free API preferred (no API key if possible)"
-        ],
-        "preferences": {
-            "table_library": "prefer built-in or minimal dependencies"
-        },
-        "existing_state": None
+tasks = [
+    {
+        "id": "research_apis",
+        "description": "Find suitable cryptocurrency price APIs (free, reliable)",
+        "role": "researcher",
+        "requires": ["web_search"],
+        "depends_on": [],
+        "outputs_to": "loom/crypto-price-cli/outputs/researcher_1.py"
+    },
+    {
+        "id": "design_cli",
+        "description": "Design CLI architecture: argument parsing, API client, table formatter",
+        "role": "architect",
+        "requires": ["design"],
+        "depends_on": ["research_apis"],
+        "outputs_to": "loom/crypto-price-cli/outputs/architect_1.py"
+    },
+    {
+        "id": "implement_cli",
+        "description": "Implement the CLI tool with API integration and table display",
+        "role": "coder",
+        "requires": ["python"],
+        "depends_on": ["design_cli"],
+        "outputs_to": "loom/crypto-price-cli/outputs/coder_1.py"
+    },
+    {
+        "id": "review_cli",
+        "description": "Test CLI functionality, check error handling, validate output",
+        "role": "reviewer",
+        "requires": ["testing"],
+        "depends_on": ["implement_cli"],
+        "outputs_to": "loom/crypto-price-cli/outputs/reviewer_1.py"
     }
+]
 
-    # Expected outputs
-    deliverables = [
-        "Working CLI script (crypto_prices.py)",
-        "requirements.txt with dependencies",
-        "Basic README with usage instructions",
-        "Error handling for common issues"
-    ]
+context = {
+    "constraints": [
+        "Use Python for implementation",
+        "Free API preferred (no API key if possible)",
+        "Handle API errors gracefully"
+    ],
+    "preferences": {},
+    "existing_state": None
+}
+
+deliverables = [
+    "Working CLI script",
+    "requirements.txt with dependencies"
+]
 ```
 
----
-
-## Analysis
-
-### What Loom Did
-
-1. **Extracted Intent:**
-   - Type: `build_application`
-   - Domain: `cli`
-   - Clear goals and success criteria
-
-2. **Broke Down Work:**
-   - 4 discrete tasks with clear descriptions
-   - Identified dependencies (research → design → implement → test)
-   - Assigned appropriate capabilities to each task
-
-3. **Captured Context:**
-   - Constraints (Python, simple setup, error handling, free API)
-   - Preferences (minimal dependencies)
-   - No existing state to consider
-
-4. **Identified Deliverables:**
-   - CLI script
-   - Dependencies file
-   - Documentation
-   - Error handling
-
-### Dependency Graph
-
-```
-research_apis (Level 0)
-      ↓
-design_cli_structure (Level 1)
-      ↓
-implement_cli (Level 2)
-      ↓
-test_cli (Level 3)
-```
-
-This is a **sequential pipeline** - each task depends on the previous.
-
-### Next Steps
-
-With this compiled prompt:
-1. Loom will spawn **researcher** at Level 0
-2. Wait for completion, then spawn **architect** at Level 1
-3. Wait for completion, then spawn **coder** at Level 2
-4. Wait for completion, then spawn **reviewer** at Level 3
-
-Each subagent reads `compiled_v1.py` to understand their task and context.
-
----
-
-## Benefits of Compilation
-
-### Before (Plain Text)
-```
-"build a CLI that fetches current crypto prices from an API and displays them in a table"
-```
-- Ambiguous (which API? what table format? what language?)
-- No structure (how to parallelize?)
-- No context preservation (each subagent needs full prompt)
-
-### After (Compiled Python)
-```python
-intent = {...}      # Clear goals
-tasks = [...]       # Structured work breakdown
-context = {...}     # Explicit constraints
-deliverables = [...] # Expected outputs
-```
-- Explicit (decisions captured)
-- Structured (parallelizable by dependency graph)
-- Efficient (subagents read from disk)
-- Analyzable (can diff versions)
-
----
-
-## Iteration 2 Changes
-
-After researcher returns API choice, `compiled_v2.py` might look like:
+### `loom/crypto-price-cli/spawn_plan.py`
 
 ```python
-# Changes from v1:
-# - Added context: api_choice = "CoinGecko"
-# - Added context: api_endpoint = "https://api.coingecko.com/api/v3/simple/price"
-# - Updated task: implement_cli now specifies CoinGecko API
+# SpawnPlan — pseudo-Python structured data (not executable)
 
-class CompiledPrompt:
-    version = 2
-    # ... same as v1 ...
+run_dir = "loom/crypto-price-cli"
+levels = 4
 
-    context = {
-        "constraints": [...],
-        "preferences": {...},
-        "existing_state": None,
+spawn_plan = [
+    {"role": "researcher", "task_id": "research_apis", "level": 0,
+     "output_file": "loom/crypto-price-cli/outputs/researcher_1.py", "depends_on": []},
+    {"role": "architect", "task_id": "design_cli", "level": 1,
+     "output_file": "loom/crypto-price-cli/outputs/architect_1.py", "depends_on": ["research_apis"]},
+    {"role": "coder", "task_id": "implement_cli", "level": 2,
+     "output_file": "loom/crypto-price-cli/outputs/coder_1.py", "depends_on": ["design_cli"]},
+    {"role": "reviewer", "task_id": "review_cli", "level": 3,
+     "output_file": "loom/crypto-price-cli/outputs/reviewer_1.py", "depends_on": ["implement_cli"]}
+]
+```
 
-        # NEW: API choice from researcher
-        "api_choice": "CoinGecko",
-        "api_endpoint": "https://api.coingecko.com/api/v3/simple/price",
-        "api_rate_limit": "50 calls/minute",
-        "api_notes": "Free, no API key required, well-documented"
+---
+
+## Dependency Graph
+
+```
+research_apis     (Level 0 — researcher)
+      |
+design_cli        (Level 1 — architect)
+      |
+implement_cli     (Level 2 — coder)
+      |
+review_cli        (Level 3 — reviewer)
+```
+
+This is a sequential pipeline -- each task depends on the previous. For a parallel example, see [Parallel Execution](parallel-execution.md).
+
+---
+
+## Compiler STATUS Line
+
+The compiler returns a single line that the orchestrator parses:
+
+```
+STATUS: compiled_v1.py written. 4 tasks, 4 levels. RUN_DIR: crypto-price-cli. TASKS: research_apis:researcher:0:loom/crypto-price-cli/outputs/researcher_1.py design_cli:architect:1:loom/crypto-price-cli/outputs/architect_1.py implement_cli:coder:2:loom/crypto-price-cli/outputs/coder_1.py review_cli:reviewer:3:loom/crypto-price-cli/outputs/reviewer_1.py
+```
+
+The orchestrator extracts:
+- **RUN_DIR**: `crypto-price-cli` (passed to all subsequent subagents)
+- **TASKS**: parsed into task_id, role, level, output_file tuples for spawning
+
+---
+
+## How Context Evolves
+
+After the researcher runs, they might suggest patches like:
+
+```python
+prompt_patches = [
+    {
+        "action": "add_context",
+        "key": "api_choice",
+        "value": "CoinGecko — free, no key required, 50 calls/min"
     }
-
-    tasks = [
-        # research_apis task removed (completed)
-        {
-            "id": "design_cli_structure",
-            # ... same as v1 ...
-        },
-        {
-            "id": "implement_cli",
-            "description": "Implement CLI using CoinGecko API (/api/v3/simple/price endpoint)",  # UPDATED
-            # ... rest same as v1 ...
-        },
-        # ...
-    ]
+]
 ```
 
----
-
-## Key Takeaways
-
-1. **Compilation adds structure** to ambiguous prompts
-2. **Dependencies are explicit**, enabling intelligent scheduling
-3. **Context accumulates** across iterations (API choice added in v2)
-4. **Subagents get zero-context overhead** by reading from disk
-5. **Evolution is trackable** through version diffs
+The merger applies this patch to create `compiled_v2.py`, which now includes the API choice in its `context` dict. Subsequent subagents see this enriched context when they read the compiled file.
 
 ---
 
-## Try It Yourself
+## Key Points
 
-```bash
-/loom <your complex prompt>
-
-# Then inspect the compilation:
-cat loom/compiled_v1.py
-```
-
-Notice how Loom transforms your natural language into structured, executable Python!
-
----
-
-## Other Examples
-
-- [Parallel Execution](parallel-execution.md) - How Loom runs multiple subagents concurrently
-- [Refinement Loop](refinement-loop.md) - Full 3-iteration cycle from vague to validated
-
-## Related Documentation
-
-- [README.md](../README.md) - Overview and quick start
-- [ARCHITECTURE.md](../ARCHITECTURE.md) - Technical deep dive into the compilation engine
-- [DIAGRAMS.md](../DIAGRAMS.md) - Visual flowcharts
+- The compiled file is **structured data**, not executable code
+- All paths include the **named run directory** (`loom/crypto-price-cli/`)
+- Each subagent reads the compiled file from disk -- no prompt bloat
+- Patches from subagents feed back into the next compiled version
+- The orchestrator only sees the STATUS line, never the compiled file contents
