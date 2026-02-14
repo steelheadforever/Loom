@@ -1,6 +1,6 @@
 """
-Complexity Calculator for Loom-RLM
-Determines optimal iteration depth (3-10) based on task complexity.
+Complexity Calculator for Loom
+Determines optimal round depth (3-10) based on task complexity.
 """
 
 from typing import Dict, Any, List
@@ -11,14 +11,14 @@ from dataclasses import dataclass
 class ComplexityScore:
     """Result of complexity calculation."""
     overall_score: float  # 0.0-1.0
-    max_iterations: int   # 3-10
+    max_rounds: int       # 3-10
     factors: Dict[str, float]
     reasoning: List[str]
 
 
 class ComplexityCalculator:
     """
-    Calculates task complexity and maps to optimal iteration depth.
+    Calculates task complexity and maps to optimal round depth.
 
     Factors:
     - Task count (30%): More tasks = higher complexity
@@ -27,10 +27,10 @@ class ComplexityCalculator:
     - Task diversity (20%): More subagent types = higher complexity
 
     Mapping:
-    - 0.0-0.3 → 3 iterations (simple)
-    - 0.3-0.6 → 5 iterations (moderate)
-    - 0.6-0.8 → 7 iterations (complex)
-    - 0.8-1.0 → 10 iterations (very complex)
+    - 0.0-0.3 → 3 rounds (simple)
+    - 0.3-0.6 → 5 rounds (moderate)
+    - 0.6-0.8 → 7 rounds (complex)
+    - 0.8-1.0 → 10 rounds (very complex)
     """
 
     # Weights for each factor
@@ -39,23 +39,23 @@ class ComplexityCalculator:
     WEIGHT_INPUT_SIZE = 0.20
     WEIGHT_TASK_DIVERSITY = 0.20
 
-    # Iteration mapping thresholds
-    ITERATION_MAP = [
-        (0.0, 0.3, 3),   # Simple: 3 iterations
-        (0.3, 0.6, 5),   # Moderate: 5 iterations
-        (0.6, 0.8, 7),   # Complex: 7 iterations
-        (0.8, 1.0, 10),  # Very complex: 10 iterations
+    # Round mapping thresholds
+    ROUND_MAP = [
+        (0.0, 0.3, 3),   # Simple: 3 rounds
+        (0.3, 0.6, 5),   # Moderate: 5 rounds
+        (0.6, 0.8, 7),   # Complex: 7 rounds
+        (0.8, 1.0, 10),  # Very complex: 10 rounds
     ]
 
     def calculate(self, compiled_prompt: Dict[str, Any]) -> ComplexityScore:
         """
-        Calculate complexity score and optimal iteration depth.
+        Calculate complexity score and optimal round depth.
 
         Args:
             compiled_prompt: Compiled prompt dictionary with tasks, context, etc.
 
         Returns:
-            ComplexityScore with overall score and max iterations
+            ComplexityScore with overall score and max rounds
         """
         factors = {}
         reasoning = []
@@ -96,12 +96,12 @@ class ComplexityCalculator:
             diversity_score * self.WEIGHT_TASK_DIVERSITY
         )
 
-        # Map to iteration count
-        max_iterations = self._map_score_to_iterations(overall_score)
+        # Map to round count
+        max_rounds = self._map_score_to_rounds(overall_score)
 
         return ComplexityScore(
             overall_score=overall_score,
-            max_iterations=max_iterations,
+            max_rounds=max_rounds,
             factors=factors,
             reasoning=reasoning
         )
@@ -317,22 +317,22 @@ class ComplexityCalculator:
         reason = f"Task diversity: {unique_count} unique capabilities ({level})"
         return score, reason
 
-    def _map_score_to_iterations(self, score: float) -> int:
+    def _map_score_to_rounds(self, score: float) -> int:
         """
-        Map complexity score to iteration count.
+        Map complexity score to round count.
 
         Args:
             score: Complexity score (0.0-1.0)
 
         Returns:
-            Recommended iteration count (3-10)
+            Recommended round count (3-10)
         """
-        for min_score, max_score, iterations in self.ITERATION_MAP:
+        for min_score, max_score, rounds in self.ROUND_MAP:
             if min_score <= score < max_score:
-                return iterations
+                return rounds
 
         # Edge case: score exactly 1.0
-        return self.ITERATION_MAP[-1][2]
+        return self.ROUND_MAP[-1][2]
 
     def to_markdown(self, complexity_score: ComplexityScore) -> str:
         """
@@ -354,7 +354,7 @@ class ComplexityCalculator:
             "## Summary",
             "",
             f"- **Overall Complexity:** {complexity_score.overall_score:.2f} / 1.0",
-            f"- **Recommended Iterations:** {complexity_score.max_iterations}",
+            f"- **Recommended Rounds:** {complexity_score.max_rounds}",
             "",
         ]
 
@@ -370,7 +370,7 @@ class ComplexityCalculator:
             description = "Intricate task with many dependencies"
         else:
             level = "Very Complex"
-            description = "Highly sophisticated task requiring extensive iteration"
+            description = "Highly sophisticated task requiring extensive rounds"
 
         lines.extend([
             f"**Complexity Level:** {level}",
@@ -414,17 +414,17 @@ class ComplexityCalculator:
                 lines.append(f"- {reason}")
             lines.append("")
 
-        # Add iteration strategy
+        # Add round strategy
         lines.extend([
-            "## Iteration Strategy",
+            "## Round Strategy",
             "",
             f"Based on complexity score of {complexity_score.overall_score:.2f}, "
-            f"the system will run up to **{complexity_score.max_iterations} iterations**.",
+            f"the system will run up to **{complexity_score.max_rounds} rounds**.",
             "",
             "This allows:",
-            "- Initial exploration and compilation",
-            "- Multiple refinement cycles",
-            "- Adequate time for complex dependencies to resolve",
+            "- Initial task decomposition and execution",
+            "- Strategic evaluation of accumulated results",
+            "- Targeted follow-up work where gaps are identified",
             "- Quality validation and optimization",
             "",
         ])

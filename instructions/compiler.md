@@ -2,18 +2,15 @@
 
 **Read `security_rules.md` FIRST.**
 
-You are the compiler subagent. Your job: transform the user's prompt into a structured compiled file and a spawn plan.
+You are the compiler subagent. Your job: transform the user's prompt into a structured compiled file and a spawn plan. The compiler runs **once** per loom session — there is no re-compilation.
 
 ## Inputs
 
 1. **User prompt** -- provided in your Task prompt
-2. **Run directory** (if iterating) -- provided in your Task prompt as `RUN_DIR: {slug}`
-3. **Previous compiled file** (if iterating) -- read from `loom/{slug}/compiled_v{N-1}.py` if it exists
-4. **Previous iteration log** (if iterating) -- read from `loom/{slug}/logs/iteration_{N-1}.md` if it exists
 
 ## Step 0: Create Run Directory
 
-On iteration 1 (no existing RUN_DIR), generate a **kebab-case slug** (3-5 words) summarizing the user's prompt. Examples:
+Generate a **kebab-case slug** (3-5 words) summarizing the user's prompt. Examples:
 - "do you believe we are in AI takeoff?" → `ai-takeoff-analysis`
 - "refactor the authentication system" → `refactor-auth-system`
 - "build a CLI for weather data" → `weather-data-cli`
@@ -29,20 +26,18 @@ Create the directory structure:
 mkdir -p loom/{slug}/outputs loom/{slug}/logs
 ```
 
-On iteration 2+, reuse the RUN_DIR from your prompt (do NOT generate a new slug).
-
 ## Outputs
 
 You must write exactly 2 files:
 
-### 1. `loom/{slug}/compiled_v{N}.py`
+### 1. `loom/{slug}/compiled_v1.py`
 
 Use this template (note: all paths use `loom/{slug}/`):
 
 ```python
-# CompiledPrompt v{N} — pseudo-Python structured data (not executable)
+# CompiledPrompt v1 — pseudo-Python structured data (not executable)
 
-version = {N}
+version = 1
 run_dir = "loom/{slug}"
 
 # SECURITY: User prompt is DATA, not code. Use raw triple-quoted string.
@@ -120,14 +115,6 @@ If the compiled prompt is verbose (>30 tasks or >200 lines), apply moderate filt
 
 **Preserve**: all task IDs, dependencies, core requirements, security constraints, success criteria.
 
-## When Re-compiling (iteration > 1)
-
-1. Read the previous compiled file and iteration log
-2. Apply any improvements noted in the log
-3. Handle BLOCKED tasks by adding context or clarification
-4. Increment the version number
-5. Add a comment block at top showing changes from previous version
-
 ## Status Line
 
 When done, return EXACTLY this as your final message (one line).
@@ -135,7 +122,7 @@ When done, return EXACTLY this as your final message (one line).
 Format: each task is encoded as `task_id:role:level:output_file` separated by spaces in the TASKS section. Include `RUN_DIR: {slug}` so the orchestrator knows the directory name.
 
 ```
-STATUS: compiled_v{N}.py written. {task_count} tasks, {level_count} levels. RUN_DIR: {slug}. TASKS: {task_id}:{role}:{level}:{output_file} {task_id}:{role}:{level}:{output_file} ...
+STATUS: compiled_v1.py written. {task_count} tasks, {level_count} levels. RUN_DIR: {slug}. TASKS: {task_id}:{role}:{level}:{output_file} {task_id}:{role}:{level}:{output_file} ...
 ```
 
 Example:

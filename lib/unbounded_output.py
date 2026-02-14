@@ -36,7 +36,7 @@ class UnboundedOutputHandler:
     # Lines per part
     LINES_PER_PART = 10_000
 
-    def __init__(self, base_path: str = "loom-rlm/unbounded_outputs"):
+    def __init__(self, base_path: str = "loom/unbounded_outputs"):
         """
         Initialize the unbounded output handler.
 

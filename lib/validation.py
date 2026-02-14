@@ -1,6 +1,6 @@
 """
-Validation Module for Loom-RLM
-Consolidates all security validation logic from Loom + Phase 3 extensions.
+Validation Module for Loom
+Consolidates all security validation logic.
 """
 
 import re
@@ -13,14 +13,13 @@ class ValidationError(Exception):
     pass
 
 
-class LoomRLMValidator:
+class LoomValidator:
     """
-    Comprehensive validation for Loom-RLM security boundaries.
+    Comprehensive validation for Loom security boundaries.
 
     Validates:
     - File paths (Loom validation)
     - Output content (Loom validation)
-    - Patch actions (Loom validation)
     - Chunk metadata (Phase 2 validation)
     - Recursive spawns (Phase 3 validation)
     - Unbounded outputs (Phase 3 validation)
@@ -38,15 +37,6 @@ class LoomRLMValidator:
         r'\bopen\(',
     ]
 
-    # Allowed patch actions
-    ALLOWED_PATCH_ACTIONS = {
-        'add_context',
-        'update_task',
-        'add_task',
-        'remove_task',
-        'update_intent'
-    }
-
     # Valid subagent roles
     VALID_ROLES = {
         'researcher',
@@ -55,7 +45,8 @@ class LoomRLMValidator:
         'reviewer',
         'data_analyst',
         'documenter',
-        'debugger'
+        'debugger',
+        'strategist'
     }
 
     def __init__(self, working_dir: str = "."):
@@ -105,18 +96,18 @@ class LoomRLMValidator:
 
         # Type-specific validation
         if path_type == "state":
-            if not file_path.startswith("loom-rlm/"):
-                return False, "State files must be within loom-rlm/"
+            if not file_path.startswith("loom/"):
+                return False, "State files must be within loom/"
 
         elif path_type == "output":
-            # Output files must match pattern: loom-rlm/outputs/[a-z_]+_[0-9]+.py
-            pattern = r'^loom-rlm/outputs/[a-z_]+_[0-9]+\.py$'
+            # Output files must match pattern: loom/outputs/[a-z_]+_[0-9]+.py
+            pattern = r'^loom/outputs/[a-z_]+_[0-9]+\.py$'
             if not re.match(pattern, file_path):
                 return False, f"Output file doesn't match required pattern: {pattern}"
 
         elif path_type == "compiled":
-            # Compiled files must match pattern: loom-rlm/compiled_v[0-9]+.py
-            pattern = r'^loom-rlm/compiled_v[0-9]+\.py$'
+            # Compiled files must match pattern: loom/[a-z0-9-]+/compiled_v1.py
+            pattern = r'^loom/[a-z0-9-]+/compiled_v1\.py$'
             if not re.match(pattern, file_path):
                 return False, f"Compiled file doesn't match required pattern: {pattern}"
 
@@ -141,6 +132,7 @@ class LoomRLMValidator:
             Tuple of (is_valid, list_of_issues)
         """
         issues = []
+        warnings = []
 
         # Check for dangerous patterns
         for pattern in self.DANGEROUS_PATTERNS:
@@ -166,11 +158,15 @@ class LoomRLMValidator:
             issues.append("Content does not appear to be structured data (no key = value assignments found)")
 
         # Check for required fields (supports both `field = ...` and `"field": ...` patterns)
-        required_fields = ['task_id', 'iteration', 'completed', 'results']
+        required_fields = ['task_id', 'round', 'completed', 'results']
         for field in required_fields:
             pattern = rf'(?:^|\s){field}\s*=|"{field}"\s*:'
             if not re.search(pattern, content, re.MULTILINE):
                 issues.append(f"Missing required field: {field}")
+
+        # Warn about deprecated prompt_patches field
+        if re.search(r'prompt_patches\s*=', content, re.MULTILINE):
+            warnings.append("deprecated field 'prompt_patches' found — ignored")
 
         # Check completed is boolean (accepts True/False, true/false, or colon syntax)
         completed_match = re.search(r'completed\s*[=:]\s*(\w+)', content)
@@ -180,67 +176,6 @@ class LoomRLMValidator:
                 issues.append(f"'completed' must be True/False (or true/false), got: {value}")
 
         return len(issues) == 0, issues
-
-    def validate_patch(self, patch: Dict[str, Any]) -> Tuple[bool, str]:
-        """
-        Validate a prompt patch.
-
-        Args:
-            patch: Patch dictionary
-
-        Returns:
-            Tuple of (is_valid, error_message)
-        """
-        # Check action is allowed
-        action = patch.get('action')
-        if action not in self.ALLOWED_PATCH_ACTIONS:
-            return False, f"Invalid patch action: {action} (allowed: {self.ALLOWED_PATCH_ACTIONS})"
-
-        # Action-specific validation
-        if action == 'add_context':
-            key = patch.get('key', '')
-            if not re.match(r'^[a-zA-Z_][a-zA-Z0-9_]*$', key):
-                return False, f"Invalid context key: {key} (must be alphanumeric/underscore)"
-
-            value = patch.get('value')
-            if isinstance(value, str):
-                # Check for shell commands or URLs in value
-                if any(cmd in value.lower() for cmd in ['rm -rf', 'curl', 'wget', 'sudo']):
-                    return False, "Context value contains shell command"
-                if value.lower().startswith(('http://', 'https://', 'ftp://')):
-                    return False, "Context value contains raw URL"
-
-        elif action == 'update_task':
-            task_id = patch.get('task_id')
-            if not task_id:
-                return False, "update_task requires task_id"
-
-            field = patch.get('field')
-            if field not in ('description', 'requires', 'depends_on'):
-                return False, f"Invalid field for update_task: {field}"
-
-        elif action == 'add_task':
-            task = patch.get('task', {})
-            if not task.get('id'):
-                return False, "add_task requires task with 'id'"
-
-            outputs_to = task.get('outputs_to', '')
-            is_valid, error = self.validate_file_path(outputs_to, "output")
-            if not is_valid:
-                return False, f"Invalid outputs_to path: {error}"
-
-        elif action == 'remove_task':
-            task_id = patch.get('task_id')
-            if not task_id:
-                return False, "remove_task requires task_id"
-
-        elif action == 'update_intent':
-            # Intent updates are sensitive - orchestrator must review
-            new_intent = patch.get('new_intent', {})
-            if not isinstance(new_intent, dict):
-                return False, "new_intent must be a dictionary"
-
-        return True, ""
 
     # ==================== PHASE 2 VALIDATIONS ====================
 
@@ -255,8 +190,8 @@ class LoomRLMValidator:
             Tuple of (is_valid, error_message)
         """
         # Check path
-        if not metadata_file.startswith("loom-rlm/"):
-            return False, "Chunk metadata must be in loom-rlm/"
+        if not metadata_file.startswith("loom/"):
+            return False, "Chunk metadata must be in loom/"
 
         if not metadata_file.endswith("chunks_metadata.py"):
             return False, "Chunk metadata must be named chunks_metadata.py"
@@ -314,8 +249,8 @@ class LoomRLMValidator:
             Tuple of (is_valid, error_message)
         """
         # Must be in unbounded_outputs directory
-        if not file_path.startswith("loom-rlm/unbounded_outputs/"):
-            return False, "Unbounded outputs must be in loom-rlm/unbounded_outputs/"
+        if not file_path.startswith("loom/unbounded_outputs/"):
+            return False, "Unbounded outputs must be in loom/unbounded_outputs/"
 
         # Check for path traversal
         if ".." in file_path:
@@ -350,25 +285,6 @@ class LoomRLMValidator:
 
     # ==================== BATCH VALIDATIONS ====================
 
-    def validate_all_patches(self, patches: List[Dict[str, Any]]) -> Tuple[bool, List[str]]:
-        """
-        Validate a list of patches.
-
-        Args:
-            patches: List of patch dictionaries
-
-        Returns:
-            Tuple of (all_valid, list_of_errors)
-        """
-        errors = []
-
-        for i, patch in enumerate(patches):
-            is_valid, error = self.validate_patch(patch)
-            if not is_valid:
-                errors.append(f"Patch {i}: {error}")
-
-        return len(errors) == 0, errors
-
     def validate_files_changed(self, files: List[str]) -> Tuple[bool, List[str]]:
         """
         Validate list of changed files.
@@ -383,7 +299,7 @@ class LoomRLMValidator:
 
         for file_path in files:
             # Determine path type
-            if file_path.startswith("loom-rlm/"):
+            if file_path.startswith("loom/"):
                 path_type = "state"
             else:
                 path_type = "code"
@@ -408,9 +324,9 @@ class LoomRLMValidator:
                 "no_directory_traversal": "'..' not allowed",
                 "no_system_paths": "No /etc, /usr, /var, ~/, etc.",
                 "no_forbidden_targets": "No .claude/, .github/workflows/, etc.",
-                "state_files": "Must be in loom-rlm/",
-                "output_pattern": "loom-rlm/outputs/[role]_[n].py",
-                "compiled_pattern": "loom-rlm/compiled_v[n].py"
+                "state_files": "Must be in loom/",
+                "output_pattern": "loom/outputs/[role]_[n].py",
+                "compiled_pattern": "loom/[slug]/compiled_v1.py"
             },
             "output_validation": {
                 "no_imports": "No import statements",
@@ -418,13 +334,7 @@ class LoomRLMValidator:
                 "no_os_system": "No os.system() or subprocess",
                 "no_file_handles": "No open()",
                 "structured_data": "Must be structured data with key-value assignments",
-                "required_fields": ["task_id", "iteration", "completed", "results"]
-            },
-            "patch_validation": {
-                "allowed_actions": list(self.ALLOWED_PATCH_ACTIONS),
-                "key_format": "Alphanumeric/underscore only",
-                "no_shell_commands": "Values must not contain shell commands",
-                "no_raw_urls": "Values must not contain raw URLs"
+                "required_fields": ["task_id", "round", "completed", "results"]
             },
             "phase_3_validation": {
                 "recursive_spawn": {
@@ -433,7 +343,7 @@ class LoomRLMValidator:
                     "task_id_format": "lowercase alphanumeric + underscore"
                 },
                 "unbounded_output": {
-                    "directory": "loom-rlm/unbounded_outputs/",
+                    "directory": "loom/unbounded_outputs/",
                     "filename_pattern": "[task]_part_[n].py or [task]_index.py",
                     "extension": ".py only"
                 }

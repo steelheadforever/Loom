@@ -57,6 +57,14 @@
 - **Bash blocked**: `curl`, `wget`, `ssh`, `scp`, `nc`, `ncat`, `sh -c`, `bash -c`, `eval`, `exec`
 - **subagent_type**: `general-purpose`
 
+### strategist
+- **Good for**: evaluating progress, deciding next steps, reading accumulated outputs
+- **Tools**: read, grep, glob (read-only)
+- **Returns**: verdict (DONE / SPAWN_NEXT / CLARIFICATION_NEEDED) with task definitions
+- **Bash access**: NONE
+- **subagent_type**: `general-purpose`
+- **Note**: infrastructure role, spawned by orchestrator only, not selectable by compiler
+
 ## Role Selection Rules
 
 - Task requires external info → `researcher`

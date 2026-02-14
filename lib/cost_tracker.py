@@ -1,5 +1,5 @@
 """
-Cost Tracker for Loom-RLM
+Cost Tracker for Loom
 Tracks token usage and costs across subagent calls with optimization recommendations.
 """
 
@@ -16,13 +16,13 @@ class SubagentCall:
     input_tokens: int
     output_tokens: int
     timestamp: str
-    iteration: int
+    round: int
 
 
 @dataclass
 class CostTracker:
     """
-    Tracks token usage and costs for Loom-RLM execution.
+    Tracks token usage and costs for Loom execution.
 
     Pricing (Claude Sonnet 4.5):
     - Input: $3.00 per 1M tokens
@@ -59,7 +59,7 @@ class CostTracker:
         task_id: str,
         input_text: str,
         output_text: str,
-        iteration: int
+        round: int
     ) -> None:
         """
         Track a subagent invocation.
@@ -69,7 +69,7 @@ class CostTracker:
             task_id: Task identifier
             input_text: Input prompt text
             output_text: Generated output text
-            iteration: Iteration number
+            round: Round number
         """
         input_tokens = self.estimate_tokens(input_text)
         output_tokens = self.estimate_tokens(output_text)
@@ -80,7 +80,7 @@ class CostTracker:
             input_tokens=input_tokens,
             output_tokens=output_tokens,
             timestamp=datetime.now().isoformat(),
-            iteration=iteration
+            round=round
         )
 
         self.calls.append(call)
@@ -140,25 +140,25 @@ class CostTracker:
 
         return role_costs
 
-    def get_cost_by_iteration(self) -> Dict[int, float]:
+    def get_cost_by_round(self) -> Dict[int, float]:
         """
-        Break down costs by iteration.
+        Break down costs by round.
 
         Returns:
-            Dictionary mapping iteration number to cost in USD
+            Dictionary mapping round number to cost in USD
         """
-        iteration_costs = {}
+        round_costs = {}
 
         for call in self.calls:
             input_cost = (call.input_tokens / 1_000_000) * self.INPUT_PRICE_PER_M
             output_cost = (call.output_tokens / 1_000_000) * self.OUTPUT_PRICE_PER_M
             total_cost = input_cost + output_cost
 
-            if call.iteration not in iteration_costs:
-                iteration_costs[call.iteration] = 0.0
-            iteration_costs[call.iteration] += total_cost
+            if call.round not in round_costs:
+                round_costs[call.round] = 0.0
+            round_costs[call.round] += total_cost
 
-        return iteration_costs
+        return round_costs
 
     def get_filtering_impact(self) -> Tuple[int, float]:
         """
@@ -217,16 +217,16 @@ class CostTracker:
                 "No filtering applied. For verbose inputs, filtering can reduce costs by 20-40%."
             )
 
-        # Analyze iteration costs
-        iteration_costs = self.get_cost_by_iteration()
-        if len(iteration_costs) > 1:
+        # Analyze round costs
+        round_costs = self.get_cost_by_round()
+        if len(round_costs) > 1:
             cost_trend = []
-            for i in sorted(iteration_costs.keys()):
-                cost_trend.append(iteration_costs[i])
+            for i in sorted(round_costs.keys()):
+                cost_trend.append(round_costs[i])
 
             if len(cost_trend) >= 2 and cost_trend[-1] > cost_trend[0] * 1.5:
                 recommendations.append(
-                    "Later iterations are significantly more expensive. "
+                    "Later rounds are significantly more expensive. "
                     "Consider better initial compilation or earlier convergence criteria."
                 )
 
@@ -256,11 +256,11 @@ class CostTracker:
         total_input, total_output = self.get_total_tokens()
         total_cost = self.get_total_cost()
         role_costs = self.get_cost_by_role()
-        iteration_costs = self.get_cost_by_iteration()
+        round_costs = self.get_cost_by_round()
         tokens_saved, cost_saved = self.get_filtering_impact()
 
         lines = [
-            "# Loom-RLM Cost Report",
+            "# Loom Cost Report",
             "",
             f"**Generated:** {datetime.now().isoformat()}",
             "",
@@ -293,15 +293,15 @@ class CostTracker:
                 lines.append(f"- **{role}:** ${cost:.4f} ({pct:.1f}%)")
             lines.append("")
 
-        if iteration_costs:
+        if round_costs:
             lines.extend([
-                "## Cost by Iteration",
+                "## Cost by Round",
                 "",
             ])
-            for iteration in sorted(iteration_costs.keys()):
-                cost = iteration_costs[iteration]
+            for round_num in sorted(round_costs.keys()):
+                cost = round_costs[round_num]
                 pct = (cost / total_cost * 100) if total_cost > 0 else 0
-                lines.append(f"- **Iteration {iteration}:** ${cost:.4f} ({pct:.1f}%)")
+                lines.append(f"- **Round {round_num}:** ${cost:.4f} ({pct:.1f}%)")
             lines.append("")
 
         recommendations = self.get_optimization_recommendations()
